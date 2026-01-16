@@ -1,0 +1,2 @@
+gym env not thread safe. Create env inside fitness apparently
+self.target_theta = np.clip(self.target_theta, -0.78, 0.78)
