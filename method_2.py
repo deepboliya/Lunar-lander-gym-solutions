@@ -19,7 +19,7 @@ class PIDController:
         self.previous_error = error
         return output
 
-class MainController:
+class AgentPID:
     def __init__(self, flattened_params = None, gravity_magnitude = None, print_ = False):
         self.print_ = print_
         self.gravity_magnitude = gravity_magnitude

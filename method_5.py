@@ -28,18 +28,19 @@ class MainController3:
                                 0.5, 0.0, 1.0,   # y position PID
                                 0.3, 0.0, 0.0,   # y velocity PID
                                 -5.0, 0.0, 0.0,  # angle PID
-                                0.78, 0.2, 0.15, 0.2, 0.1]  #mass, max tilt, landing speed, landing height, dont break legs threshold, integral limits
+                                0.5, 0.5]  #max tilt, landing speed, landing height
         
         x_kp, x_ki, x_kd = flattened_params[:3]
         y_kp, y_ki, y_kd = flattened_params[3:6]
         # vx_kp, vx_ki, vx_kd = flattened_params[6:9]
         vy_kp, vy_ki, vy_kd = flattened_params[6:9]
         angle_kp, angle_ki, angle_kd = flattened_params[9:12]
-        self.max_tilt = flattened_params[12]
-        self.landing_speed = flattened_params[13]
-        self.landing_height = flattened_params[14]  # height to start landing procedure
-        self.dont_break_legs_threshold = flattened_params[15]  # vertical speed threshold to
-        self.integral_limit = flattened_params[16]  # integral limit for all controllers
+        # self.max_tilt = flattened_params[12]
+        self.max_tilt = 0.4
+        self.integral_limit = 10.0
+        self.landing_speed = flattened_params[12]
+        self.landing_height = flattened_params[13]  # height to start landing procedure
+        # self.integral_limit = flattened_params[16]  # integral limit for all controllers
         # angle_rate_kp, angle_rate_ki, angle_rate_kd = flattened_params[15:18]
 
         self.x_position_controller = PIDController(kp=x_kp, ki=x_ki, kd=x_kd, integral_limit=self.integral_limit)
@@ -96,18 +97,8 @@ class MainController3:
         self.target_torque = self.angle_controller.compute(setpoint=self.target_theta, measurement=self.theta, dt=self.assumed_dt)
 
         
-        if self.leg1 and not self.leg2 and abs(self.vy) < self.dont_break_legs_threshold:
-            self.target_thrust = 0.0
-            self.target_torque = 1.0
-        elif self.leg2 and not self.leg1 and abs(self.vy) < self.dont_break_legs_threshold:
-            self.target_thrust = 0.0
-            self.target_torque = -1.0
-        elif self.leg1 and self.leg2:
-            self.target_thrust = 0.0
-            self.target_torque = 0.0
-        if self.y < self.landing_height:
-            if self.vy < self.landing_speed:
-                self.target_thrust = 1.0
+        if self.y < self.landing_height and self.vy < -self.landing_speed:
+            self.target_thrust = 0.5
         if self.print_:
             print(f"self.target_theta: {self.target_theta:2f}\t self.target_ay: {self.target_ay:2f} \t Theta: {self.theta:2f} \t Target theta: {self.target_theta:2f}\t Action: {self.target_thrust:2f} {self.target_torque:2f}")
 

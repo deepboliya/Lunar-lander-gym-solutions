@@ -1,30 +1,21 @@
 """
-Multi-seed evaluation script for LunarLander controllers.
+Multi-seed evaluation module for LunarLander controllers.
 Runs multiple episodes with different seeds and reports statistics.
 
-Usage:
-    python evaluate.py --method method_2 --num_seeds 10
-    python evaluate.py --method method_4 --num_seeds 20 --start_seed 100
-    python evaluate.py --method method_1 --render  # render first episode
+Usage (from main.py):
+    from evaluate import evaluate
+    evaluate(controller_factory, seeds, render_first=args.render)
 """
 import gymnasium as gym
 import numpy as np
-import argparse
-import pandas as pd
-
-from method_1 import SimpleSolution
-from method_2 import MainController
-from method_3 import SimpleSolution2
-from method_4 import MainController2
-from method_5 import MainController3
 
 GRAVITY_MAGNITUDE = 10.0
 
 
-def run_episode(controller_factory, seed, render=False):
+def run_episode(controller_factory, seed, render=False, continuous=True):
     """Run a single episode with a given seed and return the total reward."""
     render_mode = "human" if render else None
-    env = gym.make("LunarLander-v3", continuous=True, gravity=-GRAVITY_MAGNITUDE, render_mode=render_mode)
+    env = gym.make("LunarLander-v3", continuous=continuous, gravity=-GRAVITY_MAGNITUDE, render_mode=render_mode)
     observation, info = env.reset(seed=seed)
 
     controller = controller_factory()  # Fresh controller for each episode
@@ -37,18 +28,19 @@ def run_episode(controller_factory, seed, render=False):
         observation, reward, terminated, truncated, info = env.step(action)
         total_reward += reward
         episode_over = terminated or truncated
+        # print(f"Step reward: {reward:.2f}, \t Total reward: {total_reward:.2f}")
 
     env.close()
     return total_reward
 
 
-def evaluate(controller_factory, seeds, render_first=False):
+def evaluate(controller_factory, seeds, render_first=False, continuous=True):
     """Run evaluation across multiple seeds and print statistics."""
     rewards = []
 
     for i, seed in enumerate(seeds):
         render = render_first and (i == 0)
-        reward = run_episode(controller_factory, seed, render=render)
+        reward = run_episode(controller_factory, seed, render=render, continuous=continuous)
         rewards.append(reward)
         print(f"  Seed {seed:4d}: reward = {reward:8.2f}")
 
@@ -74,53 +66,3 @@ def evaluate(controller_factory, seeds, render_first=False):
         print("All seeds achieved reward >= 200")
 
     return rewards
-
-
-def get_controller_factory(method):
-    """Return a factory function that creates a fresh controller instance."""
-    if method == "method_1":
-        return lambda: SimpleSolution()
-
-    elif method == "method_2":
-        param_df = pd.read_json("cmaes_params.json")
-        flattened_params = np.array(param_df.iloc[0]["Params"])
-        print("Using flattened cma es params:", flattened_params)
-        return lambda: MainController(gravity_magnitude=GRAVITY_MAGNITUDE, print_=False)
-
-    elif method == "method_3":
-        return lambda: SimpleSolution2()
-
-    elif method == "method_4":
-        param_df = pd.read_json("good_method_4_params.json")
-        flattened_params = np.array(param_df.iloc[0]["Params"])
-        print("Using flattened cma es params:", flattened_params)
-        return lambda fp=flattened_params: MainController2(fp, GRAVITY_MAGNITUDE, print_=False)
-
-    elif method == "method_5":
-        param_df = pd.read_json("cmaes_params.json")
-        flattened_params = np.array(param_df.iloc[0]["Params"])
-        print("Using flattened cma es params:", flattened_params)
-        return lambda fp=flattened_params: MainController3(fp, GRAVITY_MAGNITUDE)
-
-    else:
-        raise ValueError("Invalid method. Choose from: method_1, method_2, method_3, method_4, method_5")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Evaluate LunarLander controller over multiple seeds")
-    parser.add_argument("--method", type=str, default="method_1",
-                        help="Controller method: method_1, method_2, method_3, method_4, method_5")
-    parser.add_argument("--num_seeds", type=int, default=10,
-                        help="Number of seeds to evaluate")
-    parser.add_argument("--start_seed", type=int, default=0,
-                        help="Starting seed value")
-    parser.add_argument("--render", action="store_true",
-                        help="Render the first episode")
-    args = parser.parse_args()
-
-    seeds = list(range(args.start_seed, args.start_seed + args.num_seeds))
-    print(f"Evaluating {args.method} with {len(seeds)} seeds: {seeds[0]} to {seeds[-1]}")
-    print("-" * 50)
-
-    controller_factory = get_controller_factory(args.method)
-    evaluate(controller_factory, seeds, render_first=args.render)

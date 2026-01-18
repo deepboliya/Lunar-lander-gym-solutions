@@ -8,8 +8,10 @@ import argparse
 import time
 import warnings
 import gymnasium as gym
+import random
 
-from method_5 import MainController3
+# from method_5 import MainController3
+from method_5 import MainController3 as Controller
 from main import GRAVITY_MAGNITUDE
 
 warnings.filterwarnings('ignore')
@@ -29,9 +31,9 @@ def fitness(params):
     # the main function to see how to interact with the environment. You should invoke your policy using the following:
     # policy(state, info, False, params)
     total_reward = 0
-    main_controller = MainController3(params, GRAVITY_MAGNITUDE)
+    main_controller = Controller(params, gravity_magnitude=GRAVITY_MAGNITUDE, print_=False)  # Initialise your policy here using the params provided by CMA-ES
 
-    (obs, info) = env.reset()  # Getting initial state information from the environment
+    (obs, info) = env.reset(seed=random.randint(0, 10000))  # Getting initial state information from the environment
     done = False
     while not done:  # While the episode is not done
         action = main_controller.compute_action(obs)  # Call policy to produce action
@@ -44,7 +46,7 @@ def fitness(params):
     return -total_reward
 
 def call_cma(num_gen=2, pop_size=2, num_policy_params = 1):
-    sigma0 = 1
+    sigma0 = 2
     x0 = np.random.normal(0, 1, (num_policy_params, 1))  # Initialisation of parameter vector
     opts = {'maxiter':num_gen, 'popsize':pop_size}
     es = cma.CMAEvolutionStrategy(x0, sigma0, opts)
@@ -76,9 +78,9 @@ if __name__ == '__main__':
     # You can skip this part if you don't intend to use CMA-ES
 
     if train_mode:
-        num_gen = 100
-        pop_size = 300
-        num_policy_params = 17
+        num_gen = 400
+        pop_size = 100
+        num_policy_params = 14
         X = call_cma(num_gen, pop_size, num_policy_params)
         cmaes_params = X[0]  # Parameters returned by CMA-ES after training
         cmaes_params_df = pd.DataFrame({

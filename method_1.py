@@ -33,6 +33,6 @@ class SimpleSolution:
         #     torque = 0
         #     print("Both legs are down")
 
-        print(f"x: {x:2f}\t vy: {vy:2f} \t Theta: {theta:2f} \t Action: {[thrust, torque]}")
+        # print(f"x: {x:2f}\t vy: {vy:2f} \t Theta: {theta:2f} \t Action: {[thrust, torque]}")
 
         return [thrust, torque]
