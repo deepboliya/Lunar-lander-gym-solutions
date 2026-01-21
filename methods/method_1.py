@@ -1,8 +1,3 @@
-"""
-Method 1: Simple hand-tuned controller
-No parameters or weights needed.
-"""
-
 from methods.base_controller import BaseController
 
 MODULE_CONFIG = {

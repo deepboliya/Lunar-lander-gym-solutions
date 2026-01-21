@@ -1,8 +1,3 @@
-"""
-Method 7: DQN Agent with neural network weights
-Uses pre-trained weights for discrete action space.
-"""
-
 import torch
 import torch.nn as nn
 import torch.optim as optim

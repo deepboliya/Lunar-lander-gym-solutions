@@ -1,8 +1,3 @@
-"""
-Method 2: PID Controller with CMA-ES tuned parameters
-Uses 15 parameters for multiple PID controllers.
-"""
-
 import math
 import numpy as np
 from methods.base_controller import BaseController

@@ -1,8 +1,3 @@
-"""
-Method 8: Simple hand-tuned controller v3
-No parameters or weights needed.
-"""
-
 from methods.base_controller import BaseController
 
 MODULE_CONFIG = {
